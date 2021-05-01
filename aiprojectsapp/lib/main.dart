@@ -82,6 +82,32 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  set content(String content) {}
+
+  Future<String> fetchResponse() async {
+    final response = await http
+        .get(Uri.parse('https://api.github.com/users/:ZackPashkin/repos'));
+    return response.body.toString();
+  }
+
+  /// Parses the license content and extracts data of "content" tag
+  ///
+  /// Fetched content is Base64 encoded and hence decoded using decodeContent method
+  Future<void> fetchLicense() async {
+    decodeContent(
+      content: jsonDecode(await fetchResponse())['content'].toString(),
+    );
+  }
+
+  /// Decodes the Base64 encoded string
+  void decodeContent({String? content}) {
+    this.content = utf8.decode(
+      base64.decode(
+        content!.replaceAll('\n', ''),
+      ),
+    );
+  }
+
   late Future<Album> futureAlbum;
 
   @override
@@ -103,6 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+      print(request);
     });
   }
 
@@ -118,7 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text(fetchResponse().toString()),
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
@@ -140,7 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
-        child: Icon(Icons.add),
+        child: Icon(Icons.place),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
